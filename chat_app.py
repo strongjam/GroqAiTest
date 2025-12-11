@@ -45,28 +45,47 @@ def get_available_models():
             for model in models_data.get("data", []):
                 model_id = model.get("id", "")
 
-                # TTS 모델 제외 (채팅 API 미지원)
-                if "tts" in model_id.lower():
+                # TTS, Whisper, Guard 모델 제외 (채팅 API 미지원)
+                skip_keywords = ["tts", "whisper", "guard", "safeguard"]
+                if any(keyword in model_id.lower() for keyword in skip_keywords):
                     continue
 
-                # 기존 모델 매핑 유지
+                # 사용자 친화적인 이름 생성
                 if "llama-3.3-70b" in model_id:
-                    api_models["Llama 3.3 70B"] = model_id
+                    display_name = "Llama 3.3 70B"
                 elif "llama-3.1-70b" in model_id:
-                    api_models["Llama 3.1 70B"] = model_id
+                    display_name = "Llama 3.1 70B"
                 elif "llama-3.1-8b" in model_id:
-                    api_models["Llama 3.1 8B"] = model_id
+                    display_name = "Llama 3.1 8B"
                 elif "mixtral-8x7b" in model_id:
-                    api_models["Mixtral 8x7B"] = model_id
+                    display_name = "Mixtral 8x7B"
                 elif "llama-3.2-90b-vision" in model_id:
-                    api_models["Llama 3.2 90B Vision"] = model_id
+                    display_name = "Llama 3.2 90B Vision"
                 elif "llama-3.2-11b-vision" in model_id:
-                    api_models["Llama 3.2 11B Vision"] = model_id
-                # 새로운 모델 추가 (기존에 없는 모델만)
-                elif model_id not in default_models.values():
-                    # 사용자 친화적인 이름 생성
-                    display_name = model_id.replace("-", " ").title()
-                    api_models[display_name] = model_id
+                    display_name = "Llama 3.2 11B Vision"
+                elif "llama-4-maverick" in model_id:
+                    display_name = "Llama 4 Maverick 17B"
+                elif "llama-4-scout" in model_id:
+                    display_name = "Llama 4 Scout 17B"
+                elif "kimi-k2" in model_id:
+                    display_name = "Kimi K2"
+                elif "compound-mini" in model_id:
+                    display_name = "Groq Compound Mini"
+                elif "compound" in model_id and "mini" not in model_id:
+                    display_name = "Groq Compound"
+                elif "gpt-oss-120b" in model_id:
+                    display_name = "GPT-OSS 120B"
+                elif "gpt-oss-20b" in model_id:
+                    display_name = "GPT-OSS 20B"
+                elif "qwen3-32b" in model_id:
+                    display_name = "Qwen 3 32B"
+                elif "allam-2-7b" in model_id:
+                    display_name = "Allam 2 7B"
+                else:
+                    # 기본 이름 생성
+                    display_name = model_id.replace("/", " - ").replace("-", " ").title()
+
+                api_models[display_name] = model_id
 
             # 기본 모델과 API 모델 병합 (API 모델이 우선)
             merged_models = {**default_models, **api_models}
@@ -86,6 +105,8 @@ def get_model_icon(model_name):
         return "🔊"
     elif "Vision" in model_name:
         return "👁️"
+    elif "Llama 4" in model_name:
+        return "🦙✨"
     elif "Llama" in model_name:
         return "🦙"
     elif "Mixtral" in model_name:
@@ -94,6 +115,14 @@ def get_model_icon(model_name):
         return "💎"
     elif "Qwen" in model_name:
         return "🐉"
+    elif "Kimi" in model_name:
+        return "🌙"
+    elif "Compound" in model_name:
+        return "⚡"
+    elif "GPT-OSS" in model_name:
+        return "🔓"
+    elif "Allam" in model_name:
+        return "🌍"
     else:
         return "🤖"
 
@@ -180,6 +209,24 @@ def get_model_description(model_name):
             "quality": "⭐⭐⭐⭐"
         }
 
+    # Llama 4 모델
+    elif "llama 4" in model_lower or "llama-4" in model_lower:
+        if "maverick" in model_lower:
+            return {
+                "description": "Meta의 Llama 4 Maverick 모델",
+                "strengths": "최신 아키텍처, 향상된 추론 능력",
+                "best_for": "복잡한 문제 해결, 전문적인 대화",
+                "speed": "빠름",
+                "quality": "⭐⭐⭐⭐⭐"
+            }
+        elif "scout" in model_lower:
+            return {
+                "description": "Meta의 Llama 4 Scout 모델",
+                "strengths": "빠른 탐색, 효율적인 처리",
+                "best_for": "빠른 질문 답변, 일반 대화",
+                "speed": "매우 빠름 ⚡",
+                "quality": "⭐⭐⭐⭐"
+            }
     # Llama 모델
     elif "llama" in model_lower:
         if "70b" in model_lower or "90b" in model_lower:
@@ -226,6 +273,46 @@ def get_model_description(model_name):
             "strengths": "다국어 지원, 다양한 작업",
             "best_for": "다국어 처리, 일반 작업",
             "speed": "보통",
+            "quality": "⭐⭐⭐⭐"
+        }
+
+    # Kimi 모델
+    elif "kimi" in model_lower:
+        return {
+            "description": "Moonshot AI의 장문맥 언어 모델",
+            "strengths": "긴 문맥 이해, 복잡한 대화",
+            "best_for": "긴 문서 분석, 복잡한 추론",
+            "speed": "보통",
+            "quality": "⭐⭐⭐⭐⭐"
+        }
+
+    # Groq Compound 모델
+    elif "compound" in model_lower:
+        return {
+            "description": "Groq의 최적화된 언어 모델",
+            "strengths": "초고속 추론, 효율적인 처리",
+            "best_for": "빠른 응답, 실시간 대화",
+            "speed": "초고속 ⚡⚡",
+            "quality": "⭐⭐⭐⭐⭐"
+        }
+
+    # GPT-OSS 모델
+    elif "gpt-oss" in model_lower:
+        return {
+            "description": "오픈소스 GPT 스타일 모델",
+            "strengths": "강력한 언어 이해, 범용 작업",
+            "best_for": "일반 대화, 다양한 작업",
+            "speed": "보통",
+            "quality": "⭐⭐⭐⭐⭐"
+        }
+
+    # Allam 모델
+    elif "allam" in model_lower:
+        return {
+            "description": "IBM의 다국어 언어 모델",
+            "strengths": "아랍어 지원, 다국어 처리",
+            "best_for": "다국어 작업, 문화적 이해",
+            "speed": "빠름",
             "quality": "⭐⭐⭐⭐"
         }
 
